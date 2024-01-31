@@ -1,0 +1,449 @@
+
+
+db size check--------------<<<<<<<<<
+
+mysql -h rds-endpoint -u username -p 
+
+SELECT TABLE_SCHEMA AS `Database`, ROUND(SUM(DATA_LENGTH + INDEX_LENGTH) / 1024 / 1024, 2) AS `Size (MB)` FROM information_schema.TABLES WHERE TABLE_SCHEMA="leadtrack_suitecrm";
+
+
+
+=====>>>>> Reset mysql root password <<<<<=====
+mysql --version
+systemctl stop mysql.service
+systemctl status mysql.service
+
+-----Skip Grant Tables & Networking-----
+systemctl set-environment MYSQLD_OPTS="--skip-networking --skip-grant-tables"
+
+systemctl start mysql.service
+systemctl status mysql.service
+
+mysql -u root
+
+ALTER USER 'root'@'localhost' IDENTIFIED WITH mysql_native_password BY '@UGARcrm00700';
+GRANT ALL privileges on  .  to 'root'@'%' identified by '@UGARcrm00700';
+FLUSH PRIVILEGES;
+show grants for root;
+exit
+
+if give error on ALTER USER command,,,   user FLUSH PRIVILEGES;
+
+
+----------------------------------------------------------mysql production queries.----------------------------------------------------------
+php deployment setup sugar application. 
+
+first we will create database  with the exact written in php.config file. and update the  db_username and password of mysql sever into php.config like username,  and add site_url=ip addr(given by dev) ,
+
+    SHOW DATABASES;
+   CREATE DATABASE vigon2sugardev12;  == create database with the name mentioned in the php.config. or given by developes.
+   use vigon2sugardev12;
+
+source /opt/data/backups/database_backup_20231101_040501.sql;   === restore data from server to database
+
+
+
+
+   SELECT *  FROM `config` WHERE category LIKE 'license' == show number of lincesed users
+
+ SELECT * FROM users WHERE USER_NAME='admin';
+ SELECT count(*) FROM `users` WHERE `status` LIKE 'Active'; == show active users
+ SELECT count(*) FROM `users` WHERE `status` LIKE 'Active' AND deleted=0;    == show deleted
+ 
+ UPDATE users SET status = 'Inactive', employee_status = 'Inactive' where user_name IN ('bfrantz', 'daber');  == it will inactivate the mentioned users.
+ 
+ SELECT id, user_name, first_name, last_name  FROM `users` WHERE `status` LIKE 'Active' AND deleted = 0 LIMIT 3;
+
+ 
+ SELECT count(*) FROM `users` WHERE `status` LIKE 'Active' AND deleted=0;  == ut will again show active users after deleting the above two.
+
+ 
+
+-----------------------------------------some server commannds after deployment-------------------
+
+#  a2enmode rewrite
+
+permission to html direcotry
+#  chmod -R 755
+# chown -R www-data:www-data html
+
+# vim apache2.conf   
+
+Documentroot /var/www 
+
+Allow override All
+--------------------------------
+
+
+
+
+
+database setup--------------<<<<<<<< 
+
+show databases;
+
+mysql > create database db-name;
+mysql > use db-name;
+mysql > show tables;
+
+
+if i want to restore db from backup ,  
+
+
+
+
+
+
+
+
+
+MYSQL SETUP ON =======>>>>
+
+Install and Configure MySQL Server (CentOS)
+Introduction
+MySQL server is one of the most popular and widely-used relational databases. In this Lab, you will be tasked with installing a MySQL server on CentOS 7, and ensuring that it has been properly secured.
+
+Scenario
+As database administrators for our company, we have been tasked with performing the initial installation of a MySQL server. In order to perform this task, we will need to download the appropriate RPM files from the MySQL server downloads page. Once we have obtained the RPM files, we will need to install the MySQL server, update the password for the super user, and ensure that the server has been properly secured. To secure the MySQL server, we will need to make sure that anonymous users are removed, remote root login is disabled, the test database has been removed, and that the privilege tables have been reloaded.
+
+Additional Information:
+
+All steps should be performed as cloud_user, using sudo when necessary. For convenience, a password is not required when using sudo
+Our working directory should be /home/cloud_user.
+The URL for the MySQL RPM Bundle tar file is here: https://dev.mysql.com/get/Downloads/MySQL-8.0/mysql-8.0.15-1.el7.x86_64.rpm-bundle.tar
+For grading purposes, we will need to update the password for the root user to Linux4me!.
+Get Logged In
+Use the credentials and server IP in the hands-on lab overview page to log into our lab server. Once that's done, we can get moving.
+
+Download the MySQL RPM Bundle tar File from the MySQL Community Server Downloads Page
+While in the cloud_user home directory ( run pwd to make sure we're in /home/cloud_user) and then run the following:
+
+# [cloud_user@host]$ wget https://dev.mysql.com/get/Downloads/MySQL-8.0/mysql-8.0.15-1.el7.x86_64.rpm-bundle.tar
+If we run a quick ls when the file is done downloading, we should see listed here.
+
+Extract the RPM Files from the MySQL Bundle tar File
+In the cloud_user’s home directory, Use the tar command to extract the RPM files from the bundle tar file:
+
+# [cloud_user@host]$ tar -xvf mysql-8.0.15-1.el7.x86_64.rpm-bundle.tar
+
+We can run ls again to see everything that got extracted.
+
+Install the MySQL Server and Dependencies Using the rpm Command
+In cloud_user’s home directory, use the rpm command to install the MySQL server and dependencies:
+
+# [cloud_user@host]$ sudo rpm -Uvh mysql-community-{server,client,common,libs}-*
+Start up the MySQL Server
+Use systemctl to start up the mysqld service, and check its state:
+
+# [cloud_user@host]$ sudo systemctl start mysqld
+# [cloud_user@host]$ sudo systemctl status mysqld
+Update the Password for the MySQL Superuser Account
+Locate the temporary password for the superuser:
+
+# [cloud_user@host]$ sudo grep 'temporary password' /var/log/mysqld.log
+Using the temporary password, log into the MySQL server as the root user:
+
+# [cloud_user@host]$ # mysql -u root -p
+Update the password for the root user:
+
+mysql> ALTER USER 'root'@'localhost' IDENTIFIED BY '<NEW_PASSWORD>';
+For grading purposes, make sure NEW_PASSWORD is Linux4me!.
+
+Exit the mysql prompt:
+
+mysql> exit
+Secure the MySQL Server Installation
+Begin the installation by running the mysql_secure_installation command:
+
+# cloud_user@host]$ mysql_secure_installation
+Answer the following questions to complete the secure installation:
+
+Change the password for root ? n
+Remove anonymous users? y
+Disallow root login remotely? y
+Remove test database and access to it? y
+Reload privilege tables now? y
+Conclusion
+We're finished here. We installed MySQL, and have it set up in a secure state, just like we were asked to do. Congratulations!
+
+
+=====================================================================================================================
+========================================================================================================================
+==============================================================
+
+Creating a Database and Table in MySQL -------------<<<<<<<<<<<<<<<<
+
+
+
+LEARNING OBJECTIVES ------<<<<
+
+Log into the MySQL Database
+
+Delete the `bad_data` Database from the MySQL Server
+
+Create a Database Named `customer_info`
+
+Delete the Table `payment_info` from the `2004_data` Database
+
+Create a Table Named `payment_info` in the `customer_info` Database According to the Characteristics Provided in the Instructions
+
+
+
+
+
+
+
+
+
+
+
+
+===============================================================
+
+
+Backup and Restore Databases in MySQL-------------------<<<<<<<<<<<<<<<<<<<
+
+
+Introduction
+In MySQL server administration, it is important to safeguard data in case of human error or a system failure. To accomplish this, MySQL provides the ability to create backups of databases and tables. In this lab, we will create backups for individual databases and tables, as well as full backups of the MySQL server. We will also restore the MySQL server from a complete backup.
+
+The Scenario
+Our team has been charged with creating backups for the MySQL server, as part of our departments disaster recovery initiative. First we will need to create a partial backup of the prod database that only includes the products table. This backup file should be named prod_products.sql. Next, we need to create a full backup of the dev and test databases, which include all tables. This backup file should be named dev_test.sql. Then we have to create a full backup of all the databases within the MySQL server, and this file should be named full_backup.sql.
+
+Lastly, we will need to create delimited-text dump files of the prod database. These dump files should be created in the /var/lib/mysql-files directory. Once all of the backup files have been created, we will need to perform a full restore of the MySQL server using the mysql_dump.sql file located in the /home/cloud_user directory.
+
+Getting Logged In
+Use the credentials and server IP in the hands-on lab overview page to log into our lab server.
+
+Create a Partial Backup of the prod Database That Only Includes the products Table
+Run following command as cloud_user to create a backup of just the products table in the prod database:
+
+# mysqldump -u root -p prod products > prod_products.sql
+Create Full Backups of the dev and test Databases
+Run following command to create backups of the dev and test databases:
+
+# mysqldump -u root -p --databases dev test > dev_test.sql
+Create a Complete Backup of All the Databases on the MySQL Server
+Use the following command to create a full backup of all the databases on the MySQL server:
+
+# mysqldump -u root -p --all-databases > full_backup.sql
+Create Delimited-Text Dump Files of the prod Database in the /var/lib/mysql-files Directory
+Run the following command to create delimited-text dump files of the prod database in /var/lib/mysql-files (the use of sudo does not require a password in this lab, so the prompt is for the MySQL root user, using the password Linux4me!:
+
+# sudo mysqldump -u root -p --tab=/var/lib/mysql-files/ prod
+Show what got dumped out with this command:
+
+sudo ls /var/lib/mysql-files/
+Let's take a look at one:
+
+sudo cat orders.txt
+We'll see that it's just a raw dump of the data in that table.
+
+Perform a Full Restore of the Databases on the MySQL Server by Reloading the msyql_dump.sql Dump File Located in the /home/cloud_user Directory
+To perform a full restore of the MySQL server, run the following command from the /home/cloud_user directory:
+
+# mysql -u root -p < mysql_dump.sql
+And to check, let's get to a MySQL prompt:
+
+mysql -u root -p
+Once we enter the password, we'll run a query from the mysql> prompt:
+
+SELECT * FROM prod.orders;
+We'll see six entries there, and there were only five in the orders.txt file we looked at earlier, so we know that this is in fact different data (which came from msyql_dump.sql).
+
+
+================================================================================================================================================================
+================================================================================================================================================================
+
+
+
+
+
+Creating Users and Managing Privileges in MySQL
+The Scenario
+Our company has hired four new employees, and they need access to the MySQL server. As our company's database administrators, it's our job to create these user accounts and grant them specific privileges to databases and tables within the server. In addition to this, we will need to remove the user account of an employee who has recently left the company, and modify the privileges of a current employee who has been moved to a different position.
+
+Getting Logged In
+Use the credentials and server IP in the hands-on lab overview page to log into our lab server. Refer back to that page for other usernames and passwords as we need them. Once we're logged into the server itself, log into MySQL as root:
+
+[cloud_user@host]$ mysql -u root -p
+We're ready to proceed.
+
+Create the Users
+This will create the four users, and only allow logins from localhost:
+
+mysql>  CREATE USER 'corey'@'localhost' IDENTIFIED BY 'Linux4you!','will'@'localhost' IDENTIFIED BY 'Linux4you!','mike'@'localhost' IDENTIFIED BY 'Linux4you!','myles'@'localhost' IDENTIFIED BY 'Linux4you!';
+Check if the new users got created with this:
+
+mysql> SELECT User FROM mysql.user
+Delete a User
+Delete the user stosh using the DROP statement:
+
+mysql>DROP USER 'stosh'@'localhost';
+Grant Privileges on the Newly Created Users
+Grant all privileges on the dev database to the corey user:
+
+mysql> GRANT ALL ON dev.* TO 'corey'@'localhost';
+Grant INSERT and SELECT privileges on the products table in the dev database to will:
+
+mysql> GRANT SELECT, INSERT ON dev.products TO 'will'@'localhost';
+Grant ALL privileges on the prod database to the mike user:
+
+mysql> GRANT ALL ON prod.* TO 'mike'@'localhost';
+Grant SELECT privileges on the products table in the prod database to myles user:
+
+mysql> GRANT SELECT ON prod.products TO 'myles'@'localhost';
+View any user's privileges with this (substituting usernames and hosts with whatever we want to check):
+
+mysql> SHOW GRANTS FOR 'user@host`;
+Revoke a Privilege
+Revoke the INSERT privilege from the kenny user running the following command:
+
+mysql> REVOKE INSERT ON prod.orders FROM 'kenny'@'localhost';
+Validate the Changes
+If we want to manually test whether our changes have worked out and been implemented how we expected, we can log in as those users and attempt to run queries.
+
+Ensure that the user corey does not have access to the prod database. Run the following as the corey user:
+
+mysql> SELECT * FROM prod.orders;
+Ensure that the user will does not have access to the orders table on the dev database. Run the following as the will user:
+
+mysql> SELECT * FROM dev.orders;
+Ensure that the user mike does not have access to the dev database. Run the following as the mike user:
+
+mysql> SELECT * FROM dev.orders;
+Ensure that the user myles does not have access to the orders table in the prod database. Run the following as the myles user:
+
+mysql> SELECT * FROM prod.orders;
+Ensure that the user kenny does not have INSERT privileges on the orders table in the prod database. Run the following as the kenny user:
+
+mysql> INSERT INTO prod.orders (orderID,userName,orderType,purchaseDate) VALUES (4,'mike','laptop','2018-04-08');
+
+
+
+
+
+======================================================================================================================================================================================================================================
+
+Real Implementation , Notes made by self by dooing R n D.
+
+
+
+How to install mysql 5.7 on centos8:  
+Step 1: Add MySQL repository
+First, you need to Disable MySQL from the default AppStream repository.
+
+# dnf module disable mysqlsudo 
+Now, add MySQL repositories to your system.
+
+# vim /etc/yum.repos.d/mysql-community.repo
+Paste the below data into the MySQL repo file.
+
+[mysql57-community]
+name=MySQL 5.7 Community Server
+baseurl=http://repo.mysql.com/yum/mysql-5.7-community/el/7/$basearch/
+enabled=1
+gpgcheck=0
+
+[mysql-connectors-community]
+name=MySQL Connectors Community
+baseurl=http://repo.mysql.com/yum/mysql-connectors-community/el/7/$basearch/
+enabled=1
+gpgcheck=0
+
+[mysql-tools-community]
+name=MySQL Tools Community
+baseurl=http://repo.mysql.com/yum/mysql-tools-community/el/7/$basearch/
+enabled=1
+gpgcheck=0
+Step 2: Install MySQL 5.7
+Now, the new MySQL repository is available on the system and we are ready to install MySQL 5.7 from the repository.
+
+Disable MySQL 8 repository:
+
+# dnf config-manager --disable mysql80-community
+Enable MySQL 5.7 repository:
+
+# dnf config-manager --enable mysql57-community
+Now, you are ready to install MySQL 5.7:
+
+# dnf install mysql-community-server
+
+
+
+sometime it will throw error :::::::::::::
+
+You can remove cached packages by executing 'dnf clean packages'.
+Error: Transaction test error:
+  file /etc/my.cnf from install of mysql-community-server-5.7.44-1.el7.x86_64 conflicts with file from package mariadb-connector-c-config-3.1.11-2.el8_3.noarch
+
+it means it is createing conflict with mariadb-connector-c-config-3.1.11-2.e18_3.noarch...
+
+so you should have to remove mariadb. by using below command ::
+
+# sudo dnf remove mariadb-connector-c-config
+
+then again execute installation command:....
+
+#   dnf install mysql-community-server
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
